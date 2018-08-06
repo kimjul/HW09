@@ -1,0 +1,67 @@
+---
+title: "Assignment HW09"
+author: "Julius Mwangi"
+date: "July 21, 2018"
+output: html_document
+---
+#1. Harry Porter Cast
+
+## 1a,b
+
+```{r}
+library(XML)
+webpage<-read_html("http://www.imdb.com/title/tt1201607/fullcredits?ref_=tt_ql_1")
+actor<-html_text(html_nodes(webpage, 'span.itemprop'))
+character <-html_text(html_nodes(webpage,'.character'))
+character <-gsub('[\n]','',character)
+character<- gsub('^ +','',character)
+character<-gsub('+$', '',character)
+character<-gsub(' +', '',character)
+cast<-data.frame(actor,character)
+head(cast,10)
+```
+
+#replace  Mr. Warwirck's  character column with  just  "Griphook  /  Professor  Filius  Flitwick"
+
+```{r}
+grep("Warwick",actor)
+actor[10]
+gsub("Griphook/ProfessorFiliusFlitwick", "Griphook/Professor Filius Flitwick", character)
+head(cast,10)
+```
+##d. Split  the  Actor's  name  into  twocolumns:  FirstName  and Surname.    Keep  in  mind  that  some  actors/actresses  have  middle  names  as  well.    Please  make  sure  that  the  middle  names  are  in  theFirstName  column,  in  addition  to  the  first  name
+
+```{r}
+name<- data.frame(actor, character)
+library(tidyr)
+Names<- extract(name, actor, c("FirstName", "SurName"), "(.*) ([^ ]+)$")
+Namesall<-data.frame(Names, character)
+head(Names,10)
+```
+#2. SportsBall (a,b,c)
+```{r}
+library(XML)
+
+#read the data from esn website
+webpage<-readHTMLTable ("http://www.espn.com/nba/team/stats/_/name/sa/san-antonio-spurs", which=2)
+
+# to change dfnames from data frames to vector. Replace data.frame with c 
+dfnames <- c("PLAYER","FGM","FGA","FG%","3PM","3PA","3P%","FTM",
+"FTA","FT%","2PM","2PA","2P%","PPS","AFG%")
+colnames(webpage) <- dfnames
+webpage <- webpage[-1 ,]
+webpage <- webpage[-16 ,]
+
+# to split PLAYER and rename the two columns "Nam" and "POS"
+nampo <- strsplit(as.character(webpage$PLAYER), ",")
+Nam <- sapply(nampo, function(x) x[1])
+POS <- sapply(nampo, function(x) x[2])
+summary(webpage)
+```
+#d. Create  a  colorful  bar  chart  that  shows  the  *Field Goals Percentage Per Game for  each  person
+```{r}
+library(ggplot2)
+player_details <- data.frame(Nam, POS, webpage[2:length(webpage)])
+info_plot <- ggplot(data = player_details , aes(x = player_details$Nam, y = as.numeric(as.character(player_details$FG)))) +geom_bar(stat= "identity", width = 0.5)
+
+```
